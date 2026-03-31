@@ -1,0 +1,59 @@
+name: Gold Rate Alert
+
+on:
+  schedule:
+    - cron: "30 3 * * *"    #  9:00 AM IST
+    - cron: "30 4 * * *"    # 10:00 AM IST
+    - cron: "30 5 * * *"    # 11:00 AM IST
+    - cron: "30 6 * * *"    # 12:00 PM IST
+    - cron: "30 7 * * *"    #  1:00 PM IST
+    - cron: "30 8 * * *"    #  2:00 PM IST
+    - cron: "30 9 * * *"    #  3:00 PM IST
+    - cron: "30 10 * * *"   #  4:00 PM IST
+    - cron: "30 11 * * *"   #  5:00 PM IST
+    - cron: "30 12 * * *"   #  6:00 PM IST
+    - cron: "30 13 * * *"   #  7:00 PM IST
+    - cron: "00 14 * * *"   #  7:30 PM IST (last run)
+
+  workflow_dispatch:         # Manual trigger for testing
+
+jobs:
+  send-alert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          google-chrome --version
+
+      - name: Install Python dependencies
+        run: |
+          pip install selenium webdriver-manager requests pytz
+
+      - name: Restore cached gold rate
+        uses: actions/cache@v3
+        with:
+          path: last_gold_rate.json
+          key: gold-rate-cache
+
+      - name: Run Gold Rate Alert
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python gold_rate.py
+
+      - name: Save updated gold rate to cache
+        uses: actions/cache@v3
+        with:
+          path: last_gold_rate.json
+          key: gold-rate-cache
