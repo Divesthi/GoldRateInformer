@@ -202,8 +202,8 @@ def gold_rate_job():
 # Run immediately first
 gold_rate_job()
 
-# Schedule every 60 minutes
-schedule.every(60).minutes.do(gold_rate_job)
+# Schedule at exact clock hours
+schedule.every().hour.at(":00").do(gold_rate_job)
 
 ist          = pytz.timezone("Asia/Kolkata")
 end_time_ist = datetime.now(ist).replace(hour=19, minute=30, second=0)
