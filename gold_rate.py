@@ -2,7 +2,6 @@ import os
 import time
 import json
 import requests
-import schedule
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -149,9 +148,7 @@ def gold_rate_job():
 
     # Step 5 — Build change indicators
     if last_rate is not None:
-        # 1g change
         change_1g = round(current_rate - last_rate, 2)
-        # 8g change
         last_8g   = round(last_rate * 8, 2)
         change_8g = round(current_8g - last_8g, 2)
 
@@ -167,7 +164,6 @@ def gold_rate_job():
         else:
             indicator_8g = f"⬇️ (-{abs(change_8g):,.2f})"
     else:
-        # First run — no change indicator
         indicator_1g = ""
         indicator_8g = ""
 
@@ -194,31 +190,5 @@ def gold_rate_job():
     save_current_rate(current_rate)
 
 
-# ============================================================
-#  INTERNAL SCHEDULER
-#  Runs at exact clock hours from 9AM to 7:30PM IST
-# ============================================================
-
-ist          = pytz.timezone("Asia/Kolkata")
-end_time_ist = datetime.now(ist).replace(hour=19, minute=30, second=0)
-
-# Schedule at exact clock hours (:00 of every hour)
-schedule.every().hour.at(":00").do(gold_rate_job)
-
-print(f"\n[INFO] Scheduler started. Running at exact clock hours until 7:30 PM IST...")
-
-# Run immediately ONLY if current time is NOT at :00
-now_ist = datetime.now(ist)
-if now_ist.minute != 0:
-    print(f"[INFO] Starting mid-hour at {now_ist.strftime('%I:%M %p')} — running immediately...")
-    gold_rate_job()
-else:
-    print(f"[INFO] Starting exactly on the hour — waiting for scheduler...")
-
-while True:
-    now_ist = datetime.now(ist)
-    if now_ist.time() > end_time_ist.time():
-        print("[INFO] Past 7:30 PM IST. Stopping scheduler. ✅")
-        break
-    schedule.run_pending()
-    time.sleep(30)
+# --- RUN ONCE — GitHub Actions triggers this every hour ---
+gold_rate_job()
