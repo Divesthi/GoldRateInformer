@@ -2,24 +2,13 @@ name: Gold Rate Alert
 
 on:
   schedule:
-    - cron: "30 3 * * *"    #  9:00 AM IST
-    - cron: "30 4 * * *"    # 10:00 AM IST
-    - cron: "30 5 * * *"    # 11:00 AM IST
-    - cron: "30 6 * * *"    # 12:00 PM IST
-    - cron: "30 7 * * *"    #  1:00 PM IST
-    - cron: "30 8 * * *"    #  2:00 PM IST
-    - cron: "30 9 * * *"    #  3:00 PM IST
-    - cron: "30 10 * * *"   #  4:00 PM IST
-    - cron: "30 11 * * *"   #  5:00 PM IST
-    - cron: "30 12 * * *"   #  6:00 PM IST
-    - cron: "30 13 * * *"   #  7:00 PM IST
-    - cron: "00 14 * * *"   #  7:30 PM IST (last run)
-
+    - cron: '30 3 * * *'   # Triggers once at 9:00 AM IST daily
   workflow_dispatch:         # Manual trigger for testing
 
 jobs:
   send-alert:
     runs-on: ubuntu-latest
+    timeout-minutes: 650     # Runs for ~10.5 hours (9AM to 7:30PM IST)
 
     steps:
       - name: Checkout code
@@ -28,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install Chrome
         run: |
@@ -38,7 +27,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install selenium webdriver-manager requests pytz
+          pip install selenium webdriver-manager requests pytz schedule
 
       - name: Restore cached gold rate
         uses: actions/cache@v3
