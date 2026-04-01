@@ -157,15 +157,15 @@ def gold_rate_job():
 
         # 1g indicator
         if change_1g > 0:
-            indicator_1g = f"🟢 (+{abs(change_1g):,.2f})"
+            indicator_1g = f"⬆️ (+{abs(change_1g):,.2f})"
         else:
-            indicator_1g = f"🔴 (-{abs(change_1g):,.2f})"
+            indicator_1g = f"⬇️ (-{abs(change_1g):,.2f})"
 
         # 8g indicator
         if change_8g > 0:
-            indicator_8g = f"🟢 (+{abs(change_8g):,.2f})"
+            indicator_8g = f"⬆️ (+{abs(change_8g):,.2f})"
         else:
-            indicator_8g = f"🔴 (-{abs(change_8g):,.2f})"
+            indicator_8g = f"⬇️ (-{abs(change_8g):,.2f})"
     else:
         # First run — no change indicator
         indicator_1g = ""
@@ -196,19 +196,24 @@ def gold_rate_job():
 
 # ============================================================
 #  INTERNAL SCHEDULER
-#  Runs job immediately then every 60 mins until 7:30PM IST
+#  Runs at exact clock hours from 9AM to 7:30PM IST
 # ============================================================
-
-# Run immediately first
-gold_rate_job()
-
-# Schedule at exact clock hours
-schedule.every().hour.at(":00").do(gold_rate_job)
 
 ist          = pytz.timezone("Asia/Kolkata")
 end_time_ist = datetime.now(ist).replace(hour=19, minute=30, second=0)
 
-print(f"\n[INFO] Scheduler started. Running every 60 mins until 7:30 PM IST...")
+# Schedule at exact clock hours (:00 of every hour)
+schedule.every().hour.at(":00").do(gold_rate_job)
+
+print(f"\n[INFO] Scheduler started. Running at exact clock hours until 7:30 PM IST...")
+
+# Run immediately ONLY if current time is NOT at :00
+now_ist = datetime.now(ist)
+if now_ist.minute != 0:
+    print(f"[INFO] Starting mid-hour at {now_ist.strftime('%I:%M %p')} — running immediately...")
+    gold_rate_job()
+else:
+    print(f"[INFO] Starting exactly on the hour — waiting for scheduler...")
 
 while True:
     now_ist = datetime.now(ist)
